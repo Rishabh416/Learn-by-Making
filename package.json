@@ -1,7 +1,7 @@
 {
-  "name": "project-learn-ai",
-  "displayName": "project-learn-ai",
-  "description": "AI-guided project-based learning",
+  "name": "learn-by-making",
+  "displayName": "Learn by Making",
+  "description": "AI-guided project-based learning platform",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.110.0"
@@ -10,20 +10,20 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:project-learn-ai.startLearning"
+    "onCommand:learn-by-making.startLearning"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "project-learn-ai.startLearning",
-        "title": "Learn AI: Start Project-Based Learning"
+        "command": "learn-by-making.startLearning",
+        "title": "Learn By Making: Start Project-Based Learning"
       }
     ],
     "configuration": {
-      "title": "Project Learn AI",
+      "title": "Learn by Making",
       "properties": {
-        "projectLearnAi.geminiApiKey": {
+        "learnbymaking.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "Enter your Google Gemini API Key to enable AI-guided learning.",

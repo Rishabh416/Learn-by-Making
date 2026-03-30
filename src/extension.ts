@@ -6,8 +6,8 @@ import * as path from 'path';
 export function activate(context: vscode.ExtensionContext) {
     console.log('Project Learn AI is active!');
 
-    let disposable = vscode.commands.registerCommand('project-learn-ai.startLearning', () => {
-        const config = vscode.workspace.getConfiguration('projectLearnAi');
+    let disposable = vscode.commands.registerCommand('learn-by-making.startLearning', () => {
+        const config = vscode.workspace.getConfiguration('learnbymaking');
         const apiKey = config.get<string>('geminiApiKey');
 
         if (!apiKey) {
