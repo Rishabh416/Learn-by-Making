@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Project Learn AI is active!');
@@ -13,28 +15,26 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Create the Webview Panel
         const panel = vscode.window.createWebviewPanel(
             'projectLearnAiPanel',
             'Learn AI Dashboard',
-            vscode.ViewColumn.Two, // This opens it on the right side, Scrimba-style!
+            vscode.ViewColumn.Two,
             {
-                enableScripts: true, // Crucial for React to run
+                enableScripts: true,
                 localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'dist')]
             }
         );
 
-        // Get the path to our compiled React app
         const scriptUri = panel.webview.asWebviewUri(
             vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js')
         );
 
-        // Inject the HTML and the script
         panel.webview.html = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${panel.webview.cspSource} 'unsafe-inline'; style-src ${panel.webview.cspSource} 'unsafe-inline';">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Learn AI</title>
             </head>
@@ -44,49 +44,150 @@ export function activate(context: vscode.ExtensionContext) {
             </body>
             </html>
         `;
-		panel.webview.onDidReceiveMessage(
+
+        // --- NEW: SESSION MANAGEMENT LOGIC ---
+        let chatSession: ChatSession | null = null;
+        let currentProjectData: any = null;
+        let chatLog: { type: string, text: string }[] = [];
+
+        // Identify the active workspace directory to save our hidden file
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        const workspacePath = workspaceFolders ? workspaceFolders[0].uri.fsPath : null;
+        const stateFile = workspacePath ? path.join(workspacePath, '.learnstate.json') : null;
+
+        // Helper: Save the current state to the hard drive
+        async function saveSession() {
+            if (!stateFile || !chatSession || !currentProjectData) return;
+            try {
+                const history = await chatSession.getHistory();
+                const state = {
+                    projectData: currentProjectData,
+                    chatLog: chatLog,
+                    history: history.map(h => ({ role: h.role, parts: h.parts })) // Extract clean history
+                };
+                fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
+            } catch (e) {
+                console.error("Failed to save state", e);
+            }
+        }
+
+        // Helper: Load the state from the hard drive
+        function loadSession() {
+            if (!stateFile || !fs.existsSync(stateFile)) return false;
+            try {
+                const data = fs.readFileSync(stateFile, 'utf8');
+                const state = JSON.parse(data);
+                
+                currentProjectData = state.projectData;
+                chatLog = state.chatLog;
+                
+                const genAI = new GoogleGenerativeAI(apiKey!);
+                const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+                
+                // Re-initialize the chat with the saved memory!
+                chatSession = model.startChat({ history: state.history });
+                return true;
+            } catch (e) {
+                console.error("Failed to load state", e);
+                return false;
+            }
+        }
+
+        panel.webview.onDidReceiveMessage(
             async message => {
                 switch (message.command) {
-                    case 'helloFromReact':
-                        vscode.window.showInformationMessage(`React says: ${message.text}`);
-                        panel.webview.postMessage({ command: 'replyFromVSCode', text: 'Backend connected! 🤝' });
-                        return;
                     
+                    // --- NEW: React tells us it's ready to receive data ---
+                    case 'webviewReady':
+                        if (loadSession()) {
+                            // If we found a save file, send it to React to bypass the setup form
+                            panel.webview.postMessage({
+                                command: 'resumeSession',
+                                data: { projectData: currentProjectData, chatLog: chatLog }
+                            });
+                        }
+                        return;
+
+                    // --- NEW: Clear the save file ---
+                    case 'clearSession':
+                        chatSession = null;
+                        currentProjectData = null;
+                        chatLog = [];
+                        if (stateFile && fs.existsSync(stateFile)) {
+                            fs.unlinkSync(stateFile);
+                        }
+                        return;
+
                     case 'startProjectSetup':
-                        const { language, level, project, focus } = message.data;
+                        currentProjectData = message.data;
+                        chatLog = []; // Reset log
                         
                         try {
-                            // 1. Initialize Gemini
                             const genAI = new GoogleGenerativeAI(apiKey);
-                            // We use gemini-1.5-flash for fast, standard text responses
                             const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
-                            // 2. Construct the Prompt Engineer
-                            const prompt = `
-                                You are an expert programming tutor inside VSCode. 
-                                The user wants to build: "${project}".
-                                Their language choice is: ${language}.
-                                Their skill level is: ${level}.
-                                Specific focus areas (if any): ${focus || 'None specified'}.
-
-                                Please provide a structured, step-by-step curriculum to build this project. 
-                                Keep it encouraging and format the output in clean Markdown.
-                                Do not write the full code for them! Give them step 1 to start with, explaining the concepts they need to learn first.
-                            `;
-
-                            // 3. Call the API
-                            const result = await model.generateContent(prompt);
-                            const responseText = result.response.text();
-
-                            // 4. Send the curriculum back to the React UI
-                            panel.webview.postMessage({ 
-                                command: 'learningPathGenerated', 
-                                text: responseText 
+                            chatSession = model.startChat({
+                                history: [
+                                    { role: "user", parts: [{ text: `You are a tutor. User wants to build: "${currentProjectData.project}" using ${currentProjectData.language}. Skill: ${currentProjectData.level}. Focus: ${currentProjectData.focus || 'None'}. Provide ONLY Step 1.` }] },
+                                    { role: "model", parts: [{ text: "Understood. I am ready to provide Step 1." }] }
+                                ]
                             });
 
+                            const result = await chatSession.sendMessage("Please provide Step 1.");
+                            const responseText = result.response.text();
+                            
+                            chatLog.push({ type: 'step', text: responseText });
+                            await saveSession(); // Save to disk
+
+                            panel.webview.postMessage({ command: 'stepGenerated', text: responseText });
+
                         } catch (error: any) {
-                            vscode.window.showErrorMessage(`Gemini API Error: ${error.message}`);
                             panel.webview.postMessage({ command: 'error', text: 'Failed to generate curriculum.' });
+                        }
+                        return;
+
+                    case 'checkCode':
+                        if (!chatSession) return;
+                        
+                        const editor = vscode.window.activeTextEditor;
+                        if (!editor) {
+                            panel.webview.postMessage({ command: 'codeChecked', text: '⚠️ **No active file found.** Click inside your code file.' });
+                            return;
+                        }
+
+                        const studentCode = editor.document.getText();
+                        const fileLang = editor.document.languageId;
+
+                        if (studentCode.trim() === '') {
+                            panel.webview.postMessage({ command: 'codeChecked', text: "Your file is empty! Give it a try first." });
+                            return;
+                        }
+
+                        try {
+                            const result = await chatSession.sendMessage(`Here is my ${fileLang} code:\n\`\`\`${fileLang}\n${studentCode}\n\`\`\`\nReview this against the current step. Give brief feedback and hints. Do not write the exact code.`);
+                            const feedbackText = result.response.text();
+
+                            chatLog.push({ type: 'feedback', text: feedbackText });
+                            await saveSession(); // Save to disk
+
+                            panel.webview.postMessage({ command: 'codeChecked', text: feedbackText });
+                        } catch (error: any) {
+                            panel.webview.postMessage({ command: 'error', text: 'Failed to check code.' });
+                        }
+                        return;
+
+                    case 'nextStep':
+                        if (!chatSession) return;
+                        try {
+                            const result = await chatSession.sendMessage("I'm ready for the next step. Please provide the next instruction.");
+                            const stepText = result.response.text();
+
+                            chatLog.push({ type: 'step', text: stepText });
+                            await saveSession(); // Save to disk
+
+                            panel.webview.postMessage({ command: 'stepGenerated', text: stepText });
+                        } catch (error: any) {
+                            panel.webview.postMessage({ command: 'error', text: 'Failed to fetch the next step.' });
                         }
                         return;
                 }
