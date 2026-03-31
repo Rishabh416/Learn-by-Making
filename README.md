@@ -1,71 +1,15 @@
-# project-learn-ai README
+## Learn by Making
+This Visual Studio Code extension leverages AI in a educative manner to teach coding by building projects you like. 
 
-This is the README for your extension "project-learn-ai". After writing up a brief description, we recommend including the following sections.
+### Features
+You can prompt the platform with a programming language and your current knowledge level along with a desired project you would like to make, example 3D Website, Hangman or a 2D platformer. 
 
-## Features
+The system will prompt you in steps and will get you to make the project as that is how best learning takes place, when you make something you enjoy. 
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Conversation is locally saved in the project directory to come back in a new coding session. 
 
-For example if there is an image subfolder under your extension project workspace:
+### Motivation
+This project was created based on my use of Google Gemini's Guided Learning feature. I want to have this experience directly in VS Code. I have used Google Gemini Pro to code this project. 
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+### To Do
+- [ ] Revise the basic prompt to make it more comprehensive and tailored for the experience
