@@ -132,7 +132,7 @@ const App = () => {
 
     return (
         <div style={styles.container}>
-            <h2 style={{ marginBottom: '5px' }}>Project Learn AI 🚀</h2>
+            <h2 style={{ marginBottom: '5px' }}>LearnKit</h2>
             <p style={{ color: 'var(--vscode-descriptionForeground, #ccc)', marginBottom: '20px' }}>What do you want to learn today?</p>
             <form onSubmit={handleSubmit} style={styles.form}>
                 <div style={styles.inputGroup}>

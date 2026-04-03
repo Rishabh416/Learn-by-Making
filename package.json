@@ -1,29 +1,35 @@
 {
-  "name": "learn-by-making",
-  "displayName": "Learn by Making",
+  "name": "learnkit",
+  "displayName": "LearnKit",
   "description": "AI-guided project-based learning platform",
+  "publisher": "RIshabhMittal",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.110.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rishabh416/LearnKit.git"
+  },
   "categories": [
     "Other"
   ],
+  "icon": "logo.ico",
   "activationEvents": [
-    "onCommand:learn-by-making.startLearning"
+    "onCommand:learnkit.startLearning"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "learn-by-making.startLearning",
-        "title": "Learn By Making: Start Project-Based Learning"
+        "command": "learnkit.startLearning",
+        "title": "LearnKit: Start Project-Based Learning"
       }
     ],
     "configuration": {
-      "title": "Learn by Making",
+      "title": "LearnKit",
       "properties": {
-        "learnbymaking.geminiApiKey": {
+        "learnkit.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "Enter your Google Gemini API Key to enable AI-guided learning.",
@@ -60,6 +66,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@vscode/vsce": "^3.7.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^7.1.2"

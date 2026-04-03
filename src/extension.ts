@@ -6,8 +6,8 @@ import * as path from 'path';
 export function activate(context: vscode.ExtensionContext) {
     console.log('Project Learn AI is active!');
 
-    let disposable = vscode.commands.registerCommand('learn-by-making.startLearning', () => {
-        const config = vscode.workspace.getConfiguration('learnbymaking');
+    let disposable = vscode.commands.registerCommand('learnkit.startLearning', () => {
+        const config = vscode.workspace.getConfiguration('learnkit');
         const apiKey = config.get<string>('geminiApiKey');
 
         if (!apiKey) {
@@ -16,8 +16,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const panel = vscode.window.createWebviewPanel(
-            'projectLearnAiPanel',
-            'Learn AI Dashboard',
+            'LearnKit Panel',
+            'LearnKit Dashboard',
             vscode.ViewColumn.Two,
             {
                 enableScripts: true,
@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                             chatSession = model.startChat({
                                 history: [
-                                    { role: "user", parts: [{ text: `You are a tutor. User wants to build: "${currentProjectData.project}" using ${currentProjectData.language}. Skill: ${currentProjectData.level}. Focus: ${currentProjectData.focus || 'None'}. Provide ONLY Step 1.` }] },
+                                    { role: "user", parts: [{ text: `You are a professional programmer ${currentProjectData.language} and a tutor. The user wants to build a "${currentProjectData.project}" using ${currentProjectData.language}. You should adapt the project details and scope based on the skill level. For this project keep a skill level of ${currentProjectData.level}. The user may have provided some particular skills they would like to focus on: ${currentProjectData.focus || 'None'}. This needs to be a learning experience where the student codes and debugs their way through the project to learnt he language and skills. Do not provide any obvious answers or complete code blocks, but you are allowed to provide documentation style hints with possible example cases (that do not give away the answer) if needed. Provide each step by step, right now ONLY Step 1.` }] },
                                     { role: "model", parts: [{ text: "Understood. I am ready to provide Step 1." }] }
                                 ]
                             });
@@ -164,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
                         }
 
                         try {
-                            const result = await chatSession.sendMessage(`Here is my ${fileLang} code:\n\`\`\`${fileLang}\n${studentCode}\n\`\`\`\nReview this against the current step. Give brief feedback and hints. Do not write the exact code.`);
+                            const result = await chatSession.sendMessage(`Here is my ${fileLang} code:\n\`\`\`${fileLang}\n${studentCode}\n\`\`\`\nReview this against the current step. Give brief feedback and hints. Do not write the exact code. Encourage debugging and documentation`);
                             const feedbackText = result.response.text();
 
                             chatLog.push({ type: 'feedback', text: feedbackText });
@@ -179,7 +179,7 @@ export function activate(context: vscode.ExtensionContext) {
                     case 'nextStep':
                         if (!chatSession) return;
                         try {
-                            const result = await chatSession.sendMessage("I'm ready for the next step. Please provide the next instruction.");
+                            const result = await chatSession.sendMessage("I'm ready for the next step. Please provide the next instruction and learning aspects.");
                             const stepText = result.response.text();
 
                             chatLog.push({ type: 'step', text: stepText });
