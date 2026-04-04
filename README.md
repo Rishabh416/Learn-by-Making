@@ -8,6 +8,15 @@ The system will prompt you in steps and will get you to make the project as that
 
 Conversation is locally saved in the project directory to come back in a new coding session. The AI system runs on Google Gemini, specifically their latest Gemini Flash Lite model
 
+### Setup
+1. Download the LearnKit extension 
+2. Sign in to [Google AI Studio](https://aistudio.google.com/)
+3. Get a Google Gemini API Key
+![Click "Get API key" in the bottom left then "Create API Key" in the top right](images\geminiAPI.png)
+4. Copy the API Key and paste it into VSCode LearnKit extension settings
+!["Settings" in the bottom left, search for LearnKit, paste the API Key](images/image.png)
+5. Click Ctrl/Cmd + Shift + P to open the command palette and search for "LearnKit: Start project based learning"
+
 ### Motivation
 This project was created based on my use of Google Gemini's Guided Learning feature. I want to have this experience directly in VS Code. I have used Google Gemini Pro to (vibe)code this project. 
 
